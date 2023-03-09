@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CovInfo Bogotá - Casos Bogotá</title>
+    <!-- BOOTSTRAP 4 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="{{url_for('static', filename='css/main.css') }}"> -->
+    <style>
+
+      @media screen and (max-width: 900px){
+        body{
+          padding-top: 40px;
+        }
+
+        .navbar {
+          margin: 0;
+          width: 100%;
+          position: fixed;
+          top:0;
+          z-index: 1000;
+        }
+        
+      }
+
+    </style>
+</head>
+<body>
+
+    {% block content %}
+    {% endblock %}
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="js/main.js"></script>
+  
+</body>
+</html>

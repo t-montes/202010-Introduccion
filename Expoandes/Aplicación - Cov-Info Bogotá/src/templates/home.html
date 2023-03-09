@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	  <a class="navbar-brand ml-3" href="/">CovInfo Bogotá</a>	  
+</nav>
+	<div class="container p-5">
+	  
+<div class="jumbotron">
+	<h1 class="display-4">CovInfo Bogotá</h1>
+	<p class="lead">La situación actual en la capital es:</p>
+	<hr class="my-4">
+	<!--def valores-->
+<FONT FACE="Arial" SIZE=20 COLOR="blue">8045</FONT>
+	<p>Casos Confirmados</p>
+<FONT FACE="Arial" SIZE=15 COLOR="green">2232</FONT>
+	<p>Casos Recuperados</p>
+<FONT FACE="Arial" SIZE=15 COLOR="red">225</FONT>
+	<p>Casos Fallecidos</p>
+<p class="lead">La fecha de corte es: 27/05/2020</p>
+
+<a class="btn btn-primary btn-lg" style="background-color:#33d875ff; color:#000" href="/localidad" role="button">Ver Casos por Localidades</a>
+<h4></h4>
+<a class="btn btn-primary btn-lg" style="background-color:#33d875ff; color:#000" href="/fecha" role="button">Ver Casos por Fecha</a>
+<h4></h4>
+<a class="btn btn-primary btn-lg" style="background-color:#33d875ff; color:#000" href="/edad" role="button">Ver Casos por Edad</a>
+<h4></h4>
+<a class="btn btn-primary btn-lg" style="background-color:#33d875ff; color:#000" href="/genero" role="button">Ver Casos por Genero</a>
+<h4></h4>
+<a class="btn btn-primary btn-lg" style="background-color:#33d875ff; color:#000" href="/tipo_de_caso" role="button">Ver Casos por Tipo de Caso</a>
+<h4></h4>
+<a class="btn btn-primary btn-lg" style="background-color:#33d875ff; color:#000" href="/ubicacion_actual" role="button">Ver Casos por Ubicación</a>
+<h4></h4>
+<a class="btn btn-primary btn-lg" style="background-color:#33d875ff; color:#000" href="/estado_actual" role="button">Ver Casos por Estado</a>
+
+</div>
+	</div>
+
+
+{% endblock %}

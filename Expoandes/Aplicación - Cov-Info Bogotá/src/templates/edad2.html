@@ -1,0 +1,241 @@
+
+{% extends "layout.html" %}
+
+{% block content %}
+
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+	<form action="/">
+	  <input type="image" src="../../static/back_image.png" height="50" width="50">
+	</form>
+	  <a class="navbar-brand ml-3" href="/">CovInfo Bogotá</a>
+</nav>
+	<div class="container p-5">
+        <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+ 
+    <style>
+    #myCanvas {
+        float:left;
+    }
+    legend {
+        font-family:Arial;
+        font-size:12px;
+        float:left;
+        margin-top:50px;
+    }
+    #tip {
+        background-color:white;
+        border:1px solid #808080;
+        position:absolute;
+        left:-200px;
+        top:100px;
+    }
+    </style>
+ 
+</head>
+<body>
+    <a href="/edad" style="display: block;background-color: burlywood;text-align: center;text-decoration: none;height: 100px;">
+        <FONT FACE="Arial" SIZE=6 COLOR="black">Ver Edades Por Grupos</FONT>
+    </a>
+    <p></p>
+    <h1 style="text-align: center;">Casos por Edad en Bogotá</h1>
+ 
+    <div>
+        <canvas id="myCanvas"></canvas>
+        <legend for="myCanvas"></legend>
+        <canvas id="tip" width=100 height=25></canvas>
+    </div>
+</body>
+</html>
+ 
+<script>
+/**
+ * Funcion para dibujar una linea
+ * @receive element ctx
+ * @receive integer startX
+ * @receive integer startY
+ * @receive integer endX
+ * @receive integer endY
+ * @receive string color in html format
+ */
+function drawLine(ctx, startX, startY, endX, endY,color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(startX,startY);
+    ctx.lineTo(endX,endY);
+    ctx.stroke();
+    ctx.restore();
+}
+ 
+/**
+ * Funcion para dibujar un rectangulo
+ * @receive element ctx
+ * @receive integer upperLeftCornerX
+ * @receive integer upperLeftCornerY
+ * @receive integer width
+ * @receive integer height
+ * @receive string color in html format
+ */
+function drawBar(ctx, upperLeftCornerX, upperLeftCornerY, width, height,color) {
+    ctx.save();
+    ctx.fillStyle=color;
+    ctx.fillRect(upperLeftCornerX,upperLeftCornerY,width,height);
+    ctx.restore();
+}
+ 
+/**
+ * Clase para crear el gráfico de barras
+ * @receive array options
+ *      canvas: objeto canvas
+ *      tip: objeto canvas
+ *      data: array de valores
+ *      name: texto
+ *      colors: array de colores para cada columna
+ */
+var BarChart = function(options) {
+    this.name = options.name;
+    this.data = options.data
+    this.canvas = options.canvas;
+    this.ctx = this.canvas.getContext("2d");
+    this.tip = options.tip;
+    this.ctxTip = this.tip.getContext("2d");
+    this.colors = options.colors;
+    this.dots=[];
+    that=this;
+ 
+    this.draw = function(){
+        var padding=30;
+ 
+        var maxValue = Math.max(...Object.values(this.data));
+        var canvasActualHeight = this.canvas.height - padding * 2;
+        var canvasActualWidth = this.canvas.width - padding - 10;
+ 
+        var gridScale = Math.round(maxValue/8);
+ 
+        // dibujamos el grid
+        var gridValue = 0;
+        while (gridValue <= maxValue){
+            var gridY = canvasActualHeight * (1 - gridValue/maxValue) + padding;
+            drawLine(
+                this.ctx,
+                0,
+                gridY,
+                this.canvas.width,
+                gridY,
+                "#e1e1e1"
+            );
+ 
+            // dibujamos los numeros en el grid
+            this.ctx.save();
+            this.ctx.fillStyle = "#808080";
+            this.ctx.textBaseline="bottom";
+            this.ctx.font = "bold 10px Arial";
+            this.ctx.fillText(gridValue, 10,gridY - 2);
+            this.ctx.restore();
+ 
+            gridValue+=gridScale;
+        }
+ 
+        // dibujamos las barras
+        var barIndex = 0;
+        var numberOfBars = Object.keys(this.data).length;
+        var barSize = (canvasActualWidth)/numberOfBars;
+ 
+        for (categ in this.data){
+            let val = this.data[categ];
+            let barHeight = Math.round( canvasActualHeight * val/maxValue) ;
+            drawBar(
+                this.ctx,
+                padding + barIndex * barSize,
+                this.canvas.height - barHeight - padding,
+                barSize,
+                barHeight,
+                this.colors[barIndex%this.colors.length]
+            );
+            let x=padding + barIndex * barSize;
+            let y=this.canvas.height - barHeight - padding;
+            this.dots.push({x:x, y:y, w:(x+barSize), h:(y+barHeight)});
+            barIndex++;
+        }
+ 
+        // dibujamos el nombre
+        this.ctx.save();
+        this.ctx.textBaseline="bottom";
+        this.ctx.textAlign="center";
+        this.ctx.fillStyle = "#000000";
+        this.ctx.font = "bold 14px Arial";
+        this.ctx.fillText(this.name, this.canvas.width/2,this.canvas.height);
+        this.ctx.restore();
+ 
+        // dibujamos la leyenda
+        barIndex = 0;
+        var legend = document.querySelector("legend[for='myCanvas']");
+        var ul = document.createElement("ul");
+        legend.append(ul);
+        for (categ in this.data){
+            let li = document.createElement("li");
+            li.style.listStyle = "none";
+            li.style.borderLeft = "20px solid "+this.colors[barIndex%this.colors.length];
+            li.style.padding = "5px";
+            li.textContent = categ+" ("+this.data[categ]+")";
+            ul.append(li);
+            barIndex++;
+        }
+    }
+ 
+    /**
+     * Funcion para mostrar el tooltip
+     */
+    this.handleMouseMove=function(e){
+        mouseX=parseInt(e.clientX-(e.clientX-e.offsetX));
+        mouseY=parseInt(e.clientY-(e.clientY-e.offsetY));
+ 
+        for (let i = 0; i < this.dots.length; i++) {
+            let dot = this.dots[i];
+            if(mouseX>dot.x && mouseX<dot.w && mouseY>dot.y && mouseY<dot.h)
+            {
+                let rect=this.canvas.getBoundingClientRect();
+                this.tip.style.left = (dot.x + rect.left - 10) + "px";
+                this.tip.style.top = (dot.y + rect.top + 10) + "px";
+                this.ctxTip.clearRect(0, 0, this.tip.width, this.tip.height);
+                let text=Object.keys(this.data)[i];
+                this.ctxTip.fillText(text+" ("+this.data[text]+")", 5, 15);
+                return;
+            }
+        }
+        this.tip.style.left = "-200px";
+    }
+ 
+    this.canvas.addEventListener("mousemove",function(e){that.handleMouseMove(e);});
+}
+ 
+var myCanvas = document.getElementById("myCanvas");
+var myTip = document.getElementById("tip");
+myCanvas.width = 300;
+myCanvas.height = 300;
+ 
+// definimos los valores de nuestra gráfica
+
+var MisNiveles={'30':217,'28':215,'27':202,'23':197,'25':188,'26':186,'32':184,'29':183,'31':177,'38':174,'37':173,'24':171,'34':163,'22':162,'40':161,'33':161,'35':157,'36':156,'39':151,'43':142,'42':139,'45':135,'41':133,'53':131,'44':127,'21':125,'47':124,'48':121,'49':119,'52':119,'51':118,'50':112,'46':111,'20':110,'18':107,'56':106,'58':103,'54':100,'59':98,'57':98,'55':94,'19':92,'60':91,'61':89,'62':77,'63':68,'11':68,'67':64,'13':64,'64':62,'14':60,'65':57,'17':56,'10':55,'12':53,'7':53,'66':52,'16':49,'72':48,'1':48,'70':47,'8':47,'15':47,'69':45,'9':45,'5':44,'68':42,'73':41,'3':41,'2':40,'6':36,'71':33,'74':33,'77':31,'4':31,'75':29,'76':28,'80':27,'79':23,'78':21,'82':21,'83':15,'85':14,'84':13,'86':13,'88':12,'90':11,'87':11,'89':10,'91':7,'81':7,'93':6,'96':5,'92':4,'95':3,'97':3,'103':1,'94':1,'98':1 };
+var MisColores=['#67b6c7','#a55ca5','#bccd7a','#eb9743','#a58787','#a53939','#72d54c','#1a0a61','#ec27ef','#ef275f','#27efca','#90b497','#0a6958','#a8a01c','#85630a','#2e3667','#ff75bd','#ca0505','#53002b','#ccdc08','#52baee','#9a9a9a','#d57d7d','#0f3428','#cf00a2','#340f0f','#ff5050','#bbff29','#baf9e8','#96ad64','#06ff00','#564040','#f67e7e','#7243e9','#43e996','#ff00e9','#628985','#ce98c9','#1c3936','#ee923b','#b59679','#67b6c7','#a55ca5','#bccd7a','#eb9743','#a58787','#a53939','#72d54c','#1a0a61','#ec27ef','#ef275f','#27efca','#90b497','#0a6958','#a8a01c','#85630a','#2e3667','#ff75bd','#ca0505','#53002b','#ccdc08','#52baee','#9a9a9a','#d57d7d','#0f3428','#cf00a2','#340f0f','#ff5050','#bbff29','#baf9e8','#96ad64','#06ff00','#564040','#f67e7e','#7243e9','#43e996','#ff00e9','#628985','#ce98c9','#1c3936','#ee923b','#b59679','#67b6c7','#a55ca5','#bccd7a','#eb9743','#a58787','#a53939','#72d54c','#1a0a61','#ec27ef','#ef275f','#27efca','#90b497','#0a6958','#a8a01c','#85630a','#2e3667','#ff75bd' ];
+
+var myBarChart = new BarChart(
+    {
+        canvas:myCanvas,
+        tip:myTip,
+        data:MisNiveles,
+        name:"Edades",
+        colors:MisColores
+    }
+);
+myBarChart.draw();
+</script>
+
+	</div>
+
+{% endblock %}
+
